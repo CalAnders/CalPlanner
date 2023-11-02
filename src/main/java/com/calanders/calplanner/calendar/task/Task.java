@@ -1,5 +1,7 @@
 package com.calanders.calplanner.calendar.task;
 
+import java.util.UUID;
+
 public class Task {
     public static final int PRIORITY_LOW = 0;
     public static final int PRIORITY_MEDIUM = 1;
@@ -8,12 +10,14 @@ public class Task {
     private String date;
     private String time;
     private int priority;
+    private UUID uuid;
 
     public Task(String text, String date, String time, int priority) {
         this.text = text;
         this.date = date;
         this.time = time;
         this.priority = priority;
+        uuid = UUID.randomUUID();
     }
 
     public void setText(String text) {
@@ -46,6 +50,14 @@ public class Task {
 
     public int getPriority() {
         return priority;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 
     @Override

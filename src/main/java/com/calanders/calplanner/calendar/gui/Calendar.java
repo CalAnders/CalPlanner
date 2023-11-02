@@ -3,6 +3,7 @@ package com.calanders.calplanner.calendar.gui;
 import com.calanders.calplanner.calendar.data.FileManager;
 import com.calanders.calplanner.calendar.gui.table.CalendarModel;
 import com.calanders.calplanner.calendar.task.Task;
+import com.calanders.calplanner.calendar.task.TaskUtil;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -17,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Calendar extends JPanel {
     private final Calendar instance;
@@ -130,30 +132,28 @@ public class Calendar extends JPanel {
         renderTasks();
     }
 
-    public void editTask() {
-        List<Task> list1 = fileManager.deserialize();
-        for (Task t : list1) {
-            System.out.println(t);
-        }
+    public void editTask(int row, int col) {
+        Task task = getTaskFromUUID(TaskUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString()));
+        taskCreator.display(task);
+        tasks.remove(task);
+        calendarTable.setValueAt(null, row, col);
+        fileManager.serialize(tasks);
     }
 
     public void deleteTask(int row, int col) {
-        List<Object> tasks = new ArrayList<>();
+        Task task = getTaskFromUUID(TaskUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString()));
+        tasks.remove(task);
+        calendarTable.setValueAt(null, row, col);
+        fileManager.serialize(tasks);
+    }
 
-        for (int i = 0; i < calendarTable.getRowCount(); i++) {
-            if (calendarTable.getValueAt(i, col) != null) {
-                tasks.add(calendarTable.getValueAt(i, col));
+    private Task getTaskFromUUID(UUID uuid) {
+        for (Task t : tasks) {
+            if (t.getUUID().equals(uuid)) {
+                return t;
             }
         }
-
-        for (int i = 0; i < tasks.size(); i++) {
-            calendarTable.setValueAt(tasks.get(i), i, col);
-        }
-        for (int i = tasks.size(); i < calendarTable.getRowCount(); i++) {
-            calendarTable.setValueAt(null, i, col);
-        }
-
-//        calendarTable.setValueAt(null, row, col);
+        return null;
     }
 
     public void renderTasks() {
@@ -165,7 +165,7 @@ public class Calendar extends JPanel {
                     for (int row = 0; row < calendarTable.getRowCount(); row++) {
                         if (getColumn(tasks.get(i).getDate()) != null) {
                             if (calendarTable.getValueAt(row, getColumn(tasks.get(i).getDate()).getModelIndex()) == null) {
-                                calendarTable.setValueAt(getTaskHtml(tasks.get(i)), row, getColumn(tasks.get(i).getDate()).getModelIndex());
+                                calendarTable.setValueAt(TaskUtil.getTaskHTML(tasks.get(i)), row, getColumn(tasks.get(i).getDate()).getModelIndex());
                                 break;
                             }
                         }
@@ -175,29 +175,6 @@ public class Calendar extends JPanel {
                 }
             }
         }
-    }
-
-    private String getTaskHtml(Task task) {
-        String color;
-        switch (task.getPriority()) {
-            case Task.PRIORITY_LOW:
-                color = "rgb(0, 192, 0)";
-                break;
-            case Task.PRIORITY_HIGH:
-                color = "rgb(255, 64, 64)";
-                break;
-            default:
-                color = "rgb(255, 176, 0)";
-        }
-
-        String html =
-                "<html>"
-                    + "<div>"
-                        + "<p style=\"color: " + color + "; font-weight: bold;\">" + task.getText() + "</p>"
-                        + "<p style=\"font-size: 10px\">" + task.getTime() + "</p>"
-                    + "</div>"
-                + "</html>";
-        return html;
     }
 
     public void setCalendarWeek(int offset) {
@@ -273,15 +250,11 @@ public class Calendar extends JPanel {
         b.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-//                if (b.isEnabled()) {
-//                    taskCreator.display(new Task(
-//                            "TEST TEXT",
-//                            getWeekDates().get(calendarTable.getSelectedColumn()).getDayOfWeek() + " " + (getWeekDates().get(calendarTable.getSelectedColumn()).getMonthValue()) + "/" + getWeekDates().get(calendarTable.getSelectedColumn()).getDayOfMonth(),
-//                            "11:59 PM",
-//                            Task.PRIORITY_LOW));
-//                }
+                if (b.isEnabled()) {
+                    editTask(getSelectedRow(), getSelectedColumn());
+                }
 
-                editTask();
+
             }
         });
         return b;

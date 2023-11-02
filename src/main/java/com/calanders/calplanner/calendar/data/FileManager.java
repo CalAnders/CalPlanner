@@ -9,6 +9,7 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class FileManager {
     private final File directory;
@@ -62,6 +63,7 @@ public class FileManager {
             taskDetails.put("date", task.getDate());
             taskDetails.put("time", task.getTime());
             taskDetails.put("priority", task.getPriority());
+            taskDetails.put("uuid", task.getUUID().toString());
             JSONObject taskObject = new JSONObject();
             taskObject.put("task", taskDetails);
             taskArray.add(taskObject);
@@ -100,12 +102,17 @@ public class FileManager {
     }
 
     private Task parseTaskObject(JSONObject object) {
-        JSONObject task = (JSONObject) object.get("task");
-        String text = task.get("text").toString();
-        String date = task.get("date").toString();
-        String time = task.get("time").toString();
-        int priority = Integer.valueOf(task.get("priority").toString());
+        Task task;
+        JSONObject taskObject = (JSONObject) object.get("task");
+        String text = taskObject.get("text").toString();
+        String date = taskObject.get("date").toString();
+        String time = taskObject.get("time").toString();
+        int priority = Integer.valueOf(taskObject.get("priority").toString());
+        UUID uuid = UUID.fromString(taskObject.get("uuid").toString());
 
-        return new Task(text, date, time, priority);
+        task = new Task(text, date, time, priority);
+        task.setUUID(uuid);
+
+        return task;
     }
 }
