@@ -3,7 +3,7 @@ package com.calanders.calplanner.calendar.gui;
 import com.calanders.calplanner.calendar.data.FileManager;
 import com.calanders.calplanner.calendar.gui.table.CalendarModel;
 import com.calanders.calplanner.calendar.task.Task;
-import com.calanders.calplanner.calendar.task.TaskUtil;
+import com.calanders.calplanner.calendar.task.HTMLUtil;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -20,6 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A class that represents a seven-day calendar in which tasks may be added and modified. The Calendar is
+ * displayed with seven columns to signify days of the week. Tasks can be added to the Calendar and are
+ * placed in their corresponding date.
+ *
+ * @author CalAnders
+ * @version 1.0
+ */
 public class Calendar extends JPanel {
     private final Calendar instance;
     private final TaskCreator taskCreator;
@@ -38,13 +46,16 @@ public class Calendar extends JPanel {
     private int weekOffset = 0;
     private int rowCount = 20;
 
+    /**
+     * Constructs a new Calendar object with all required components.
+     */
     public Calendar() {
         instance = this;
         taskCreator = new TaskCreator(instance);
         calendar = new JPanel();
         calendarModel = new CalendarModel(new String[7], rowCount);
-        calendarTable = new JTable(calendarModel);
 //        calendarTable = new JTable(new DefaultTableModel(new String[7], 20));
+        calendarTable = new JTable(calendarModel);
         menu = new JPanel();
         createTaskButton = createNewTaskButton("New Task");
         editTaskButton = createEditTaskButton("Edit Task");
@@ -78,15 +89,12 @@ public class Calendar extends JPanel {
         calendarTable.setShowHorizontalLines(false);
         calendarTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         calendarTable.setCellSelectionEnabled(true);
-//        calendarTable.setDefaultRenderer(Task.class, new TaskRenderer());
         calendarTable.setRowHeight(100);
         calendarTable.setFont(new Font("Arial", Font.PLAIN, 16));
         calendarTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int row = calendarTable.rowAtPoint(e.getPoint());
-                int col = calendarTable.columnAtPoint(e.getPoint());
-                if (row >= 0 && col >= 0) {
+                if (isTaskSelected(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
                     editTaskButton.setEnabled(true);
                     deleteTaskButton.setEnabled(true);
                 } else {
@@ -126,36 +134,82 @@ public class Calendar extends JPanel {
         setCalendarWeek(weekOffset);
     }
 
+    /**
+     * Adds a new Task to the Calendar. The Task argument will be appropriately stored and displayed
+     * in the Calendar. First, the Task is stored on user's system and is then rendered into the Calendar.
+     *
+     * @param task the Task to be added
+     */
     public void addTask(Task task) {
         tasks.add(task);
         fileManager.serialize(tasks);
         renderTasks();
     }
 
+    /**
+     * Displays the task editing window with the Task information loaded from the row and column selected
+     * by the user if the row and column if it contains a valid Task. After the Task is modified, it will
+     * replace the Task at the selected row and column.
+     *
+     * @param row the selected row
+     * @param col the selected column
+     */
     public void editTask(int row, int col) {
-        Task task = getTaskFromUUID(TaskUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString()));
-        taskCreator.display(task);
-        tasks.remove(task);
-        calendarTable.setValueAt(null, row, col);
-        fileManager.serialize(tasks);
+        Task task = getTask(row, col);
+        if (task != null) {
+            taskCreator.edit(task);
+            tasks.remove(task);
+            calendarTable.setValueAt(null, row, col);
+            fileManager.serialize(tasks);
+        }
     }
 
+    /**
+     * Deletes the Task at the selected row and column if it contains a valid Task. This method will remove
+     * the Task from storage and the Calendar display.
+     *
+     * @param row the selected row
+     * @param col the selected column
+     */
     public void deleteTask(int row, int col) {
-        Task task = getTaskFromUUID(TaskUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString()));
-        tasks.remove(task);
-        calendarTable.setValueAt(null, row, col);
-        fileManager.serialize(tasks);
+        Task task = getTask(row, col);
+        if (task != null) {
+            tasks.remove(task);
+            calendarTable.setValueAt(null, row, col);
+            fileManager.serialize(tasks);
+
+            // shift tasks up
+
+        }
     }
 
-    private Task getTaskFromUUID(UUID uuid) {
-        for (Task t : tasks) {
-            if (t.getUUID().equals(uuid)) {
-                return t;
+    private Task getTask(int row, int col) {
+        if (calendarTable.getValueAt(row, col) != null) {
+            UUID cellUUID = HTMLUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString());
+            for (Task t : tasks) {
+                if (t.getUUID().equals(cellUUID)) {
+                    return t;
+                }
             }
         }
         return null;
     }
 
+    /**
+     * Returns whether the selected row and column of the Calendar contains a valid Task or not.
+     *
+     * @param row the selected row
+     * @param col the selected column
+     * @return true if Task at (row, col) is valid, false otherwise.
+     */
+    public boolean isTaskSelected(int row, int col) {
+        return getTask(row, col) != null;
+    }
+
+    /**
+     * Renders the Tasks from storage. This will render all Tasks for all dates, so only one call is
+     * required for all Tasks until one of them is modified.
+     */
     public void renderTasks() {
         calendarModel.setRowCount(0);
         calendarModel.setRowCount(rowCount);
@@ -165,7 +219,7 @@ public class Calendar extends JPanel {
                     for (int row = 0; row < calendarTable.getRowCount(); row++) {
                         if (getColumn(tasks.get(i).getDate()) != null) {
                             if (calendarTable.getValueAt(row, getColumn(tasks.get(i).getDate()).getModelIndex()) == null) {
-                                calendarTable.setValueAt(TaskUtil.getTaskHTML(tasks.get(i)), row, getColumn(tasks.get(i).getDate()).getModelIndex());
+                                calendarTable.setValueAt(HTMLUtil.getTaskHTML(tasks.get(i)), row, getColumn(tasks.get(i).getDate()).getModelIndex());
                                 break;
                             }
                         }
@@ -177,18 +231,28 @@ public class Calendar extends JPanel {
         }
     }
 
+    /**
+     * Sets the Calendar's week display to match an offset (in weeks) from the current week. For example,
+     * calling setCalendarWeek(1) will display the next week. Also, setCalendarWeek(-1) will display the
+     * last week.
+     *
+     * @param offset the offset in weeks from current week
+     */
     public void setCalendarWeek(int offset) {
         weekOffset = offset;
         String[] weekDates = getWeekDates();
-
         for (int col = 0; col < 7; col++) {
             calendarTable.getTableHeader().getColumnModel().getColumn(col).setHeaderValue(weekDates[col]);
         }
         calendarTable.getTableHeader().repaint();
-
         renderTasks();
     }
 
+    /**
+     * Retrieves a List of LocalDate objects that refer to the Calendar's set week.
+     *
+     * @return the List of LocalDates for the Calendar's set week.
+     */
     public List<LocalDate> getWeek() {
         LocalDate localDate = LocalDate.now().plus(weekOffset, ChronoUnit.WEEKS);
         List<LocalDate> weekDates = new ArrayList<>();
@@ -201,17 +265,29 @@ public class Calendar extends JPanel {
         return weekDates;
     }
 
+    /**
+     * Retrieves the display names of the days of the set week. This will be in the format of "DAY month-day-year"
+     * For example, a possible date is "SUNDAY 8-20-2023".
+     *
+     * @return an array of Strings containing the names of the week days
+     */
     public String[] getWeekDates() {
         java.util.List<LocalDate> weekDates = getWeek();
         String[] dates = new String[7];
-
         for (int col = 0; col < 7; col++) {
-            dates[col] = weekDates.get(col).getDayOfWeek() + " " + (weekDates.get(col).getMonthValue()) + "-" + weekDates.get(col).getDayOfMonth();
+            dates[col] = weekDates.get(col).getDayOfWeek() + " "
+                    + weekDates.get(col).getMonthValue() + "-"
+                    + weekDates.get(col).getDayOfMonth() + "-"
+                    + weekDates.get(col).getYear();
         }
-
         return dates;
     }
 
+    /**
+     * Retrieves the current day of the week according to the user's system.
+     *
+     * @return the day of the week as a DayOfWeek object
+     */
     public DayOfWeek getCurrentDayOfWeek() {
         return LocalDate.now().getDayOfWeek();
     }
@@ -225,10 +301,20 @@ public class Calendar extends JPanel {
         return null;
     }
 
+    /**
+     * Retrieves the selected row index of the Calendar
+     *
+     * @return the selected row index of the Calendar
+     */
     public int getSelectedRow() {
         return calendarTable.getSelectedRow();
     }
 
+    /**
+     * Retrieves the selected column index of the Calendar
+     *
+     * @return the selected column index of the Calendar
+     */
     public int getSelectedColumn() {
         return calendarTable.getSelectedColumn();
     }
@@ -238,7 +324,7 @@ public class Calendar extends JPanel {
         b.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                taskCreator.display();
+                taskCreator.create();
             }
         });
         return b;

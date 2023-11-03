@@ -6,10 +6,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
+/**
+ * A class to create the CalPlanner window which houses the Calendar.
+ */
 public class CalPlanner {
     private final JFrame frame;
     private final Calendar calendar;
 
+    /**
+     * Constructs a new CalPlanner and creates a new JFrame window. This window will contain the
+     * Calendar and is ready to be interacted with immediately.
+     */
     public CalPlanner() {
         frame = new JFrame("CalPlanner");
         calendar = new Calendar();
@@ -30,6 +37,12 @@ public class CalPlanner {
         frame.setVisible(true);
     }
 
+    /**
+     * The main method of the CalPlanner application. This method creates a new CalPlanner window
+     * where the Calendar will be displayed.
+     *
+     * @param args the command line arguments array
+     */
     public static void main(String[] args) {
         EventQueue.invokeLater(CalPlanner::new);
     }

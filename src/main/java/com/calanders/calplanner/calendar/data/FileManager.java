@@ -11,12 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A class that operates as the file management system for Task serialization. This class is used
+ * to create a directory for Tasks to be saved using JSON formatting. FileManager is used to save
+ * and retrieve JSON data that holds Task objects.
+ */
 public class FileManager {
     private final File directory;
     private final File tasks;
     private FileWriter taskWriter;
     private FileReader taskReader;
 
+    /**
+     * Constructs a new FileManager. This constructor will attempt to create the directory of the
+     * saved Tasks as well as the necessary readers and writers.
+     */
     public FileManager() {
         directory = new File(System.getenv("APPDATA"), "CalPlanner");
         tasks = new File(directory + File.separator + "tasks.json");
@@ -33,6 +42,12 @@ public class FileManager {
         }
     }
 
+    /**
+     * Converts the List of Task objects into JSON data saved in the system. This data is put into
+     * a JSON array which will hold the instances of Task objects inside.
+     *
+     * @param taskList the List of Tasks to be serialized
+     */
     public void serialize(List<Task> taskList) {
         try {
             taskWriter = new FileWriter(tasks);
@@ -71,6 +86,11 @@ public class FileManager {
         return taskArray;
     }
 
+    /**
+     * Retrieves the List of Tasks from the JSON data saved in the system.
+     *
+     * @return the List of Tasks retrieved from JSON
+     */
     public List<Task> deserialize() {
         try {
             taskReader = new FileReader(tasks);

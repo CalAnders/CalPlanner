@@ -1,16 +1,21 @@
 package com.calanders.calplanner.calendar.gui;
 
 import com.calanders.calplanner.calendar.task.Task;
+import com.calanders.calplanner.calendar.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A class that serves to provide a creation and editing interface for Tasks added to a Calendar. The
+ * TaskCreator can generate a new Task based on user input and selections which will be added to the
+ * Calendar upon submittal. Also, a TaskCreator can edit an existing Task if supplied with a Task object.
+ */
 public class TaskCreator {
     private final JFrame frame;
     private final Calendar calendar;
@@ -25,6 +30,11 @@ public class TaskCreator {
     private JComboBox priority = createJComboBox(priorities, 1);
     private JButton submit = createSubmitButton("Create Task");
 
+    /**
+     * Constructs a new TaskCreator with a Calendar to create and add Tasks to.
+     *
+     * @param calendar the Calendar to create Tasks for
+     */
     public TaskCreator(Calendar calendar) {
         this.calendar = calendar;
         frame = new JFrame("New Task");
@@ -41,6 +51,12 @@ public class TaskCreator {
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(calendar);
         frame.setResizable(false);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                calendar.addTask(getTask());
+            }
+        });
 
         panel.setLayout(new GridBagLayout());
         formPanel.setLayout(new GridBagLayout());
@@ -76,7 +92,11 @@ public class TaskCreator {
         frame.setVisible(false);
     }
 
-    public void display() {
+    /**
+     * Displays the TaskCreator to create a new Task. This will display the necessary options to create
+     * a new Task as a graphical user interface.
+     */
+    public void create() {
         dates = calendar.getWeekDates();
         taskTitle.setText(null);
         resetJComboBox(date, dates, calendar.getCurrentDayOfWeek().getValue() - 1);
@@ -87,24 +107,24 @@ public class TaskCreator {
         frame.setVisible(true);
     }
 
-    public void display(Task task) {
+    /**
+     * Displays the TaskCreator with options populated based on the Task argument.
+     *
+     * @param task the Task to edit
+     */
+    public void edit(Task task) {
         dates = calendar.getWeekDates();
         taskTitle.setText(task.getText());
         resetJComboBox(date, dates, calendar.getSelectedColumn());
-        resetJComboBox(time, times, indexOf(times, task.getTime()));
+        resetJComboBox(time, times, Util.indexOf(times, task.getTime()));
         resetJComboBox(priority, priorities, task.getPriority());
         submit.setText("Update Task");
         frame.setTitle("Edit Task");
         frame.setVisible(true);
     }
 
-    public static int indexOf(String[] a, String s) {
-        for (int i = 0; i < a.length; i++) {
-            if (a[i].equals(s)) {
-                return i;
-            }
-        }
-        return -1;
+    private Task getTask() {
+        return new Task(taskTitle.getText(), date.getSelectedItem().toString(), time.getSelectedItem().toString(), priority.getSelectedIndex());
     }
 
     private JComboBox createJComboBox(String[] items, int defaultIndex) {
@@ -134,8 +154,7 @@ public class TaskCreator {
         b.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                Task task = new Task(taskTitle.getText(), date.getSelectedItem().toString(), time.getSelectedItem().toString(), priority.getSelectedIndex());
-                calendar.addTask(task);
+                calendar.addTask(getTask());
                 frame.dispose();
             }
         });
