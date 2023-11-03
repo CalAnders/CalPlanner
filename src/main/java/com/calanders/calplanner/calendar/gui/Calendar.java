@@ -26,7 +26,7 @@ import java.util.UUID;
  * placed in their corresponding date.
  *
  * @author CalAnders
- * @version 1.0
+ * @version 1.0.0
  */
 public class Calendar extends JPanel {
     private final Calendar instance;
@@ -177,9 +177,7 @@ public class Calendar extends JPanel {
             tasks.remove(task);
             calendarTable.setValueAt(null, row, col);
             fileManager.serialize(tasks);
-
-            // shift tasks up
-
+            calendarModel.moveRow(row + 1, calendarTable.getRowCount() - 1, row);
         }
     }
 
