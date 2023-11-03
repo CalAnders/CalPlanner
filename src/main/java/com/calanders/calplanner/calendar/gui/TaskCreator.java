@@ -54,7 +54,9 @@ public class TaskCreator {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                calendar.addTask(getTask());
+                if (!getTask().getText().equals("")) {
+                    calendar.addTask(getTask());
+                }
             }
         });
 
@@ -154,8 +156,10 @@ public class TaskCreator {
         b.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                calendar.addTask(getTask());
-                frame.dispose();
+                if (!getTask().getText().equals("")) {
+                    calendar.addTask(getTask());
+                    frame.dispose();
+                }
             }
         });
         return b;
