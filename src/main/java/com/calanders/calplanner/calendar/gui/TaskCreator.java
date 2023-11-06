@@ -22,13 +22,15 @@ public class TaskCreator {
     private final JPanel panel;
     private final JPanel formPanel;
     private String[] dates;
-    private final String[] times = createTimes();
-    private final String[] priorities = { "Priority: Low", "Priority: Medium", "Priority: High" };
-    private JTextField taskTitle;
-    private JComboBox date;
-    private JComboBox time = createJComboBox(times, 0);
-    private JComboBox priority = createJComboBox(priorities, 1);
-    private JButton submit = createSubmitButton("Create Task");
+    private final String[] times;
+    private final String[] priorities;
+    private final JTextField taskTitle;
+    private final JComboBox date;
+    private final JComboBox time;
+    private final JComboBox priority;
+    private final JButton submit;
+    private boolean editing;
+    private Task editingTask;
 
     /**
      * Constructs a new TaskCreator with a Calendar to create and add Tasks to.
@@ -41,8 +43,14 @@ public class TaskCreator {
         panel = new JPanel();
         formPanel = new JPanel();
         dates = calendar.getWeekDates();
+        times = createTimes();
+        priorities = new String[]{"Priority: Low", "Priority: Medium", "Priority: High"};
         taskTitle = new JTextField();
         date = createJComboBox(dates, calendar.getCurrentDayOfWeek().getValue() - 1);
+        time = createJComboBox(times, 0);
+        priority = createJComboBox(priorities, 1);
+        submit = createSubmitButton("Create Task");
+        editing = false;
 
         init();
     }
@@ -51,14 +59,6 @@ public class TaskCreator {
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(calendar);
         frame.setResizable(false);
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                if (!getTask().getText().equals("")) {
-                    calendar.addTask(getTask());
-                }
-            }
-        });
 
         panel.setLayout(new GridBagLayout());
         formPanel.setLayout(new GridBagLayout());
@@ -99,6 +99,7 @@ public class TaskCreator {
      * a new Task as a graphical user interface.
      */
     public void create() {
+        editing = false;
         dates = calendar.getWeekDates();
         taskTitle.setText(null);
         resetJComboBox(date, dates, calendar.getCurrentDayOfWeek().getValue() - 1);
@@ -115,6 +116,8 @@ public class TaskCreator {
      * @param task the Task to edit
      */
     public void edit(Task task) {
+        editingTask = task;
+        editing = true;
         dates = calendar.getWeekDates();
         taskTitle.setText(task.getText());
         resetJComboBox(date, dates, calendar.getSelectedColumn());
@@ -126,7 +129,11 @@ public class TaskCreator {
     }
 
     private Task getTask() {
-        return new Task(taskTitle.getText(), date.getSelectedItem().toString(), time.getSelectedItem().toString(), priority.getSelectedIndex());
+        Task task = new Task(taskTitle.getText(), date.getSelectedItem().toString(), time.getSelectedItem().toString(), priority.getSelectedIndex());
+        if (editing) {
+            task.setUUID(editingTask.getUUID());
+        }
+        return task;
     }
 
     private JComboBox createJComboBox(String[] items, int defaultIndex) {
@@ -157,7 +164,11 @@ public class TaskCreator {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (!getTask().getText().equals("")) {
-                    calendar.addTask(getTask());
+                    if (editing && editingTask != null) {
+                        calendar.editTask(getTask());
+                    } else {
+                        calendar.addTask(getTask());
+                    }
                     frame.dispose();
                 }
             }

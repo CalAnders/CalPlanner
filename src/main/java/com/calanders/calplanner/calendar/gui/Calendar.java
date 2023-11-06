@@ -142,9 +142,11 @@ public class Calendar extends JPanel {
      * @param task the Task to be added
      */
     public void addTask(Task task) {
-        tasks.add(task);
-        fileManager.serialize(tasks);
-        renderTasks();
+        if (task != null) {
+            tasks.add(task);
+            fileManager.serialize(tasks);
+            renderTasks();
+        }
     }
 
     /**
@@ -152,16 +154,21 @@ public class Calendar extends JPanel {
      * by the user if the row and column if it contains a valid Task. After the Task is modified, it will
      * replace the Task at the selected row and column.
      *
-     * @param row the selected row
-     * @param col the selected column
+     * @param task the Task to edit
      */
-    public void editTask(int row, int col) {
-        Task task = getTask(row, col);
+    public void editTask(Task task) {
         if (task != null) {
-            taskCreator.edit(task);
-            tasks.remove(task);
-            calendarTable.setValueAt(null, row, col);
+            int row = getTaskRow(task);
+            int col = getTaskColumn(task);
+            for (int i = 0; i < tasks.size(); i++) {
+                if (tasks.get(i).getUUID().equals(task.getUUID())) {
+                    System.out.println("changed from " + tasks.get(i) + "   to   " + task);
+                    tasks.set(i, task);
+                }
+            }
+            calendarTable.setValueAt(task, row, col);
             fileManager.serialize(tasks);
+            renderTasks();
         }
     }
 
@@ -169,17 +176,60 @@ public class Calendar extends JPanel {
      * Deletes the Task at the selected row and column if it contains a valid Task. This method will remove
      * the Task from storage and the Calendar display.
      *
-     * @param row the selected row
-     * @param col the selected column
+     * @param task the Task to delete
      */
-    public void deleteTask(int row, int col) {
-        Task task = getTask(row, col);
+    public void deleteTask(Task task) {
         if (task != null) {
+            int row = getTaskRow(task);
+            int col = getTaskColumn(task);
             tasks.remove(task);
             calendarTable.setValueAt(null, row, col);
             calendarModel.moveRow(row + 1, calendarTable.getRowCount() - 1, row);
             fileManager.serialize(tasks);
+            renderTasks();
         }
+    }
+
+    /**
+     * Retrieves the row index of a specified Task.
+     *
+     * @param task the Task
+     * @return the row index of the Task or -1 if not found
+     */
+    public int getTaskRow(Task task) {
+        for (int col = 0; col < getWeekDates().length; col++) {
+            for (int row = 0; row < calendarTable.getRowCount(); row++) {
+                if (calendarTable.getValueAt(row, col) != null) {
+                    UUID cellUUID = HTMLUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString());
+                    if (task.getUUID().toString().equals(cellUUID.toString())) {
+                        System.out.println(row + ", " + col);
+                        return row;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Retrieves the column index of a specified Task.
+     *
+     * @param task the Task
+     * @return the column index of the Task or -1 if not found
+     */
+    public int getTaskColumn(Task task) {
+        for (int col = 0; col < getWeekDates().length; col++) {
+            for (int row = 0; row < calendarTable.getRowCount(); row++) {
+                if (calendarTable.getValueAt(row, col) != null) {
+                    UUID cellUUID = HTMLUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString());
+                    if (task.getUUID().toString().equals(cellUUID.toString())) {
+                        System.out.println(row + ", " + col);
+                        return col;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     private Task getTask(int row, int col) {
@@ -336,10 +386,8 @@ public class Calendar extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (b.isEnabled()) {
-                    editTask(getSelectedRow(), getSelectedColumn());
+                    taskCreator.edit(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
                 }
-
-
             }
         });
         return b;
@@ -352,7 +400,7 @@ public class Calendar extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (b.isEnabled()) {
-                    deleteTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn());
+                    deleteTask(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
                 }
             }
         });

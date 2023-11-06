@@ -128,6 +128,12 @@ public class Task {
      */
     @Override
     public String toString() {
-        return "Task{" + "text='" + text + '\'' + ", date='" + date + '\'' + ", time='" + time + '\'' + ", priority=" + priority + '}';
+        return "Task{" +
+                "text='" + text + '\'' +
+                ", date='" + date + '\'' +
+                ", time='" + time + '\'' +
+                ", priority=" + priority +
+                ", uuid=" + uuid +
+                '}';
     }
 }
