@@ -26,7 +26,7 @@ import java.util.UUID;
  * placed in their corresponding date.
  *
  * @author CalAnders
- * @version 1.0.0
+ * @version 1.1
  */
 public class Calendar extends JPanel {
     private final Calendar instance;
@@ -85,6 +85,7 @@ public class Calendar extends JPanel {
         calendarTable.getTableHeader().setReorderingAllowed(false);
         calendarTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 20));
         calendarTable.getTableHeader().setBackground(MENU_COLOR);
+        calendarTable.setSelectionBackground(calendarTable.getBackground());
         calendarTable.setFillsViewportHeight(true);
         calendarTable.setShowHorizontalLines(false);
         calendarTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -176,8 +177,8 @@ public class Calendar extends JPanel {
         if (task != null) {
             tasks.remove(task);
             calendarTable.setValueAt(null, row, col);
-            fileManager.serialize(tasks);
             calendarModel.moveRow(row + 1, calendarTable.getRowCount() - 1, row);
+            fileManager.serialize(tasks);
         }
     }
 
