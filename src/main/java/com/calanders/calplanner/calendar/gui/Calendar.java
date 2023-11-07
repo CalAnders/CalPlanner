@@ -51,14 +51,13 @@ public class Calendar extends JPanel {
         taskCreator = new TaskCreator(instance);
         calendar = new JPanel();
         calendarModel = new CalendarModel(new String[7], rowCount);
-//        calendarTable = new JTable(new DefaultTableModel(new String[7], 20));
         calendarTable = new JTable(calendarModel);
         menu = new JPanel();
         createTaskButton = createNewTaskButton("New Task");
         editTaskButton = createEditTaskButton("Edit Task");
         deleteTaskButton = createDeleteTaskButton("Delete Task");
-        last = createNavButton("<");
-        next = createNavButton(">");
+        last = createNavButton("←");
+        next = createNavButton("→");
         fileManager = new FileManager();
         tasks = fileManager.deserialize();
 
@@ -338,7 +337,7 @@ public class Calendar extends JPanel {
         JButton b = createControlButton(text);
         b.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 taskCreator.create();
             }
         });
@@ -350,7 +349,7 @@ public class Calendar extends JPanel {
         b.setEnabled(false);
         b.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 if (b.isEnabled()) {
                     taskCreator.edit(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
                 }
@@ -364,7 +363,7 @@ public class Calendar extends JPanel {
         b.setEnabled(false);
         b.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 if (b.isEnabled()) {
                     deleteTask(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
                 }

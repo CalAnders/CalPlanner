@@ -58,6 +58,7 @@ public class TaskCreator {
     private void init() {
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(calendar);
+        frame.setAlwaysOnTop(true);
         frame.setResizable(false);
 
         panel.setLayout(new GridBagLayout());
@@ -136,46 +137,6 @@ public class TaskCreator {
         return task;
     }
 
-    private JComboBox createJComboBox(String[] items, int defaultIndex) {
-        JComboBox cb = new JComboBox(items);
-        cb.setSelectedIndex(defaultIndex);
-        cb.setBackground(Color.WHITE);
-
-        return cb;
-    }
-
-    private JComboBox resetJComboBox(JComboBox cb, String[] items, int defaultIndex) {
-        cb.removeAllItems();
-        for (String s : items) {
-            cb.addItem(s);
-        }
-        cb.setSelectedIndex(defaultIndex);
-        return cb;
-    }
-
-    private JButton createSubmitButton(String text) {
-        JButton b = new JButton(text);
-        b.setBorder(BorderFactory.createRaisedBevelBorder());
-        b.setFocusable(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        b.setFont(new Font("Arial", Font.PLAIN, 16));
-        b.setMargin(new Insets(10, 10, 10, 10));
-        b.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (!getTask().getText().equals("")) {
-                    if (editing && editingTask != null) {
-                        calendar.editTask(getTask());
-                    } else {
-                        calendar.addTask(getTask());
-                    }
-                    frame.dispose();
-                }
-            }
-        });
-        return b;
-    }
-
     private String[] createTimes() {
         List<String> timeList = new ArrayList<>();
         String[] times;
@@ -203,5 +164,45 @@ public class TaskCreator {
         times = Arrays.copyOf(timeList.toArray(), timeList.size(), String[].class);
 
         return times;
+    }
+
+    private JComboBox createJComboBox(String[] items, int defaultIndex) {
+        JComboBox cb = new JComboBox(items);
+        cb.setSelectedIndex(defaultIndex);
+        cb.setBackground(Color.WHITE);
+
+        return cb;
+    }
+
+    private JComboBox resetJComboBox(JComboBox cb, String[] items, int defaultIndex) {
+        cb.removeAllItems();
+        for (String s : items) {
+            cb.addItem(s);
+        }
+        cb.setSelectedIndex(defaultIndex);
+        return cb;
+    }
+
+    private JButton createSubmitButton(String text) {
+        JButton b = new JButton(text);
+        b.setBorder(BorderFactory.createRaisedBevelBorder());
+        b.setFocusable(false);
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setFont(new Font("Arial", Font.PLAIN, 16));
+        b.setMargin(new Insets(10, 10, 10, 10));
+        b.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (!getTask().getText().equals("")) {
+                    if (editing && editingTask != null) {
+                        calendar.editTask(getTask());
+                    } else {
+                        calendar.addTask(getTask());
+                    }
+                    frame.dispose();
+                }
+            }
+        });
+        return b;
     }
 }

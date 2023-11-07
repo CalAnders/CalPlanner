@@ -3,6 +3,7 @@ package com.calanders.calplanner;
 import com.calanders.calplanner.calendar.gui.Calendar;
 
 import javax.swing.*;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.*;
 
 /**
@@ -24,6 +25,11 @@ public class CalPlanner {
     }
 
     private void init() {
+        try {
+            UIManager.setLookAndFeel(new NimbusLookAndFeel());
+        } catch (UnsupportedLookAndFeelException e) {
+            throw new RuntimeException(e);
+        }
         frame.setIconImage(new ImageIcon(getClass().getResource("/icons/calplanner.png")).getImage());
         frame.setMinimumSize(new Dimension(960, 540));
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
