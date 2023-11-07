@@ -8,10 +8,7 @@ import com.calanders.calplanner.calendar.task.HTMLUtil;
 import javax.swing.*;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +23,7 @@ import java.util.UUID;
  * placed in their corresponding date.
  *
  * @author CalAnders
- * @version 1.1
+ * @version 1.0.3
  */
 public class Calendar extends JPanel {
     private final Calendar instance;
@@ -94,7 +91,7 @@ public class Calendar extends JPanel {
         calendarTable.setFont(new Font("Arial", Font.PLAIN, 16));
         calendarTable.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseReleased(MouseEvent e) {
                 if (isTaskSelected(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
                     editTaskButton.setEnabled(true);
                     deleteTaskButton.setEnabled(true);
@@ -107,21 +104,12 @@ public class Calendar extends JPanel {
 
         calendar.setLayout(new BorderLayout());
         calendar.setBackground(MENU_COLOR);
-        last.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setCalendarWeek(--weekOffset);
-            }
-        });
+        last.addActionListener(e -> setCalendarWeek(--weekOffset));
         calendar.add(last, BorderLayout.LINE_START);
         calendar.add(new JScrollPane(calendarTable), BorderLayout.CENTER);
-        next.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setCalendarWeek(++weekOffset);
-            }
-        });
+        next.addActionListener(e -> setCalendarWeek(++weekOffset));
         calendar.add(next, BorderLayout.LINE_END);
+
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -130,7 +118,6 @@ public class Calendar extends JPanel {
                 next.setFont(new Font("Arial", Font.BOLD, e.getComponent().getWidth() / 40));
             }
         });
-
         add(calendar);
         setCalendarWeek(weekOffset);
     }
@@ -162,7 +149,6 @@ public class Calendar extends JPanel {
             int col = getTaskColumn(task);
             for (int i = 0; i < tasks.size(); i++) {
                 if (tasks.get(i).getUUID().equals(task.getUUID())) {
-                    System.out.println("changed from " + tasks.get(i) + "   to   " + task);
                     tasks.set(i, task);
                 }
             }
@@ -202,7 +188,6 @@ public class Calendar extends JPanel {
                 if (calendarTable.getValueAt(row, col) != null) {
                     UUID cellUUID = HTMLUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString());
                     if (task.getUUID().toString().equals(cellUUID.toString())) {
-                        System.out.println(row + ", " + col);
                         return row;
                     }
                 }
@@ -223,7 +208,6 @@ public class Calendar extends JPanel {
                 if (calendarTable.getValueAt(row, col) != null) {
                     UUID cellUUID = HTMLUtil.getUUIDFromHTML(calendarTable.getValueAt(row, col).toString());
                     if (task.getUUID().toString().equals(cellUUID.toString())) {
-                        System.out.println(row + ", " + col);
                         return col;
                     }
                 }
@@ -348,24 +332,6 @@ public class Calendar extends JPanel {
             }
         }
         return null;
-    }
-
-    /**
-     * Retrieves the selected row index of the Calendar
-     *
-     * @return the selected row index of the Calendar
-     */
-    public int getSelectedRow() {
-        return calendarTable.getSelectedRow();
-    }
-
-    /**
-     * Retrieves the selected column index of the Calendar
-     *
-     * @return the selected column index of the Calendar
-     */
-    public int getSelectedColumn() {
-        return calendarTable.getSelectedColumn();
     }
 
     private JButton createNewTaskButton(String text) {

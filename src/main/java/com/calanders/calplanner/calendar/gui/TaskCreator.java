@@ -120,7 +120,7 @@ public class TaskCreator {
         editing = true;
         dates = calendar.getWeekDates();
         taskTitle.setText(task.getText());
-        resetJComboBox(date, dates, calendar.getSelectedColumn());
+        resetJComboBox(date, dates, Util.indexOf(calendar.getWeekDates(), task.getDate()));
         resetJComboBox(time, times, Util.indexOf(times, task.getTime()));
         resetJComboBox(priority, priorities, task.getPriority());
         submit.setText("Update Task");

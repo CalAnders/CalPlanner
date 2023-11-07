@@ -4,7 +4,6 @@ import com.calanders.calplanner.calendar.gui.Calendar;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Objects;
 
 /**
  * A class to create the CalPlanner window which houses the Calendar.
@@ -25,7 +24,7 @@ public class CalPlanner {
     }
 
     private void init() {
-        frame.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/images/calplanner.png"))).getImage());
+        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/calplanner.png")).getImage());
         frame.setMinimumSize(new Dimension(960, 540));
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
