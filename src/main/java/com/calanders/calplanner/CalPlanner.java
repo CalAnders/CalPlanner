@@ -5,6 +5,7 @@ import com.calanders.calplanner.calendar.gui.Calendar;
 import javax.swing.*;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * A class to create the CalPlanner window which houses the Calendar.
@@ -30,7 +31,7 @@ public class CalPlanner {
         } catch (UnsupportedLookAndFeelException e) {
             throw new RuntimeException(e);
         }
-        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/calplanner.png")).getImage());
+        frame.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/icons/calplanner.png"))).getImage());
         frame.setMinimumSize(new Dimension(960, 540));
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

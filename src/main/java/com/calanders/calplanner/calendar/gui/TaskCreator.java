@@ -90,6 +90,15 @@ public class TaskCreator {
         panelConstraints.fill = GridBagConstraints.BOTH;
         panel.add(submit, panelConstraints);
 
+        taskTitle.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    submitTask();
+                }
+            }
+        });
+
         frame.add(panel);
         frame.pack();
         frame.setVisible(false);
@@ -129,12 +138,19 @@ public class TaskCreator {
         frame.setVisible(true);
     }
 
-    private Task getTask() {
+    private void submitTask() {
         Task task = new Task(taskTitle.getText(), date.getSelectedItem().toString(), time.getSelectedItem().toString(), priority.getSelectedIndex());
         if (editing) {
             task.setUUID(editingTask.getUUID());
         }
-        return task;
+        if (!task.getText().equals("")) {
+            if (editing && editingTask != null) {
+                calendar.editTask(task);
+            } else {
+                calendar.addTask(task);
+            }
+            frame.dispose();
+        }
     }
 
     private String[] createTimes() {
@@ -193,14 +209,7 @@ public class TaskCreator {
         b.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!getTask().getText().equals("")) {
-                    if (editing && editingTask != null) {
-                        calendar.editTask(getTask());
-                    } else {
-                        calendar.addTask(getTask());
-                    }
-                    frame.dispose();
-                }
+                submitTask();
             }
         });
         return b;

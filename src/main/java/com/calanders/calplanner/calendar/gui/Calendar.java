@@ -23,7 +23,7 @@ import java.util.UUID;
  * placed in their corresponding date.
  *
  * @author CalAnders
- * @version 1.0.3
+ * @version 1.0.4
  */
 public class Calendar extends JPanel {
     private final Calendar instance;
@@ -81,22 +81,34 @@ public class Calendar extends JPanel {
         calendarTable.getTableHeader().setReorderingAllowed(false);
         calendarTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 20));
         calendarTable.getTableHeader().setBackground(MENU_COLOR);
-        calendarTable.setSelectionBackground(calendarTable.getBackground());
+//        calendarTable.setSelectionBackground(calendarTable.getBackground());
         calendarTable.setFillsViewportHeight(true);
         calendarTable.setShowHorizontalLines(false);
         calendarTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         calendarTable.setCellSelectionEnabled(true);
-        calendarTable.setRowHeight(100);
-        calendarTable.setFont(new Font("Arial", Font.PLAIN, 16));
+        calendarTable.setRowHeight(120);
         calendarTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (isTaskSelected(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
                     editTaskButton.setEnabled(true);
                     deleteTaskButton.setEnabled(true);
+                    if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                        taskCreator.edit(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
+                    }
                 } else {
                     editTaskButton.setEnabled(false);
                     deleteTaskButton.setEnabled(false);
+                }
+            }
+        });
+        calendarTable.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (isTaskSelected(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
+                    if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                        deleteTask(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
+                    }
                 }
             }
         });
@@ -133,6 +145,9 @@ public class Calendar extends JPanel {
             fileManager.serialize(tasks);
             renderTasks();
         }
+
+        editTaskButton.setEnabled(false);
+        deleteTaskButton.setEnabled(false);
     }
 
     /**
@@ -154,6 +169,9 @@ public class Calendar extends JPanel {
             calendarTable.setValueAt(task, row, col);
             fileManager.serialize(tasks);
             renderTasks();
+
+            editTaskButton.setEnabled(false);
+            deleteTaskButton.setEnabled(false);
         }
     }
 
@@ -173,6 +191,9 @@ public class Calendar extends JPanel {
             fileManager.serialize(tasks);
             renderTasks();
         }
+
+        editTaskButton.setEnabled(false);
+        deleteTaskButton.setEnabled(false);
     }
 
     /**
