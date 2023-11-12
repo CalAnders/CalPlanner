@@ -90,22 +90,17 @@ public class Calendar extends JPanel {
         calendarTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (isTaskSelected(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
-                    editTaskButton.setEnabled(true);
-                    deleteTaskButton.setEnabled(true);
+                if (isTaskSelected()) {
                     if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
                         taskCreator.edit(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
                     }
-                } else {
-                    editTaskButton.setEnabled(false);
-                    deleteTaskButton.setEnabled(false);
                 }
             }
         });
         calendarTable.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if (isTaskSelected(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
+                if (isTaskSelected()) {
                     if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                         deleteTask(getTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn()));
                     }
@@ -249,14 +244,31 @@ public class Calendar extends JPanel {
     }
 
     /**
-     * Returns whether the selected row and column of the Calendar contains a valid Task or not.
+     * Returns whether the specified row and column of the Calendar contains a valid Task or not.
      *
-     * @param row the selected row
-     * @param col the selected column
+     * @param row the row
+     * @param col the column
      * @return true if Task at (row, col) is valid, false otherwise.
      */
-    public boolean isTaskSelected(int row, int col) {
+    public boolean isValidTask(int row, int col) {
         return getTask(row, col) != null;
+    }
+
+    /**
+     * Returns whether the selected row and column of the Calendar contains a valid Task or not.
+     *
+     * @return true if the selected cell in Calendar contains a valid Task, false otherwise.
+     */
+    public boolean isTaskSelected() {
+        if (isValidTask(calendarTable.getSelectedRow(), calendarTable.getSelectedColumn())) {
+            editTaskButton.setEnabled(true);
+            deleteTaskButton.setEnabled(true);
+            return true;
+        } else {
+            editTaskButton.setEnabled(false);
+            deleteTaskButton.setEnabled(false);
+            return false;
+        }
     }
 
     /**

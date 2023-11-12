@@ -95,6 +95,8 @@ public class TaskCreator {
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     submitTask();
+                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    frame.dispose();
                 }
             }
         });
