@@ -1,4 +1,6 @@
-package com.calanders.calplanner.calendar.task;
+package com.calanders.calplanner.util;
+
+import com.calanders.calplanner.data.Task;
 
 import java.util.UUID;
 
@@ -19,17 +21,11 @@ public class HTMLUtil {
      * @return the HTML String
      */
     public static String getTaskHTML(Task task) {
-        String color;
-        switch (task.getPriority()) {
-            case Task.PRIORITY_LOW:
-                color = LOW_COLOR_HTML;
-                break;
-            case Task.PRIORITY_HIGH:
-                color = HIGH_COLOR_HTML;
-                break;
-            default:
-                color = MEDIUM_COLOR_HTML;
-        }
+        String color = switch (task.getPriority()) {
+            case Task.PRIORITY_LOW -> LOW_COLOR_HTML;
+            case Task.PRIORITY_HIGH -> HIGH_COLOR_HTML;
+            default -> MEDIUM_COLOR_HTML;
+        };
 
         String html =
                 "<html>"
@@ -37,6 +33,7 @@ public class HTMLUtil {
                     + "<p style=\"font-size: 10px;\">" + task.getTime() + "</p>"
                     + UUID_HTML + task.getUUID() + "</p>"
                 + "</html>";
+
         return html;
     }
 

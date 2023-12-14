@@ -1,22 +1,30 @@
-package com.calanders.calplanner.calendar.gui;
+package com.calanders.calplanner.gui;
 
-import com.calanders.calplanner.calendar.task.Task;
-import com.calanders.calplanner.calendar.util.Util;
+import com.calanders.calplanner.data.Task;
+import com.calanders.calplanner.data.resources.Resources;
+import com.calanders.calplanner.util.JTextFieldLimiter;
+import com.calanders.calplanner.util.Util;
 
 import javax.swing.*;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * A class that serves to provide a creation and editing interface for Tasks added to a Calendar. The
- * TaskCreator can generate a new Task based on user input and selections which will be added to the
- * Calendar upon submittal. Also, a TaskCreator can edit an existing Task if supplied with a Task object.
+ * A class that serves to provide a Task creation and modification graphical user interface for Tasks
+ * added to a Calendar. The TaskMenu can generate a new Task based on user input and selections
+ * which will be added to the Calendar upon submission. Also, a TaskMenu can edit an existing
+ * Task if supplied with a Task object.
  */
-public class TaskCreator {
+public class TaskMenu {
     private final JFrame frame;
     private final Calendar calendar;
     private final JPanel panel;
@@ -24,41 +32,45 @@ public class TaskCreator {
     private String[] dates;
     private final String[] times;
     private final String[] priorities;
-    private final JTextField taskTitle;
-    private final JComboBox date;
-    private final JComboBox time;
-    private final JComboBox priority;
+    private final JTextField text;
+    private final JComboBox<String> date;
+    private final JComboBox<String> time;
+    private final JComboBox<String> priority;
     private final JButton submit;
     private boolean editing;
     private Task editingTask;
 
     /**
-     * Constructs a new TaskCreator with a Calendar to create and add Tasks to.
+     * Constructs a new TaskMenu with a Calendar to create and add Tasks to.
      *
      * @param calendar the Calendar to create Tasks for
      */
-    public TaskCreator(Calendar calendar) {
+    public TaskMenu(Calendar calendar) {
         this.calendar = calendar;
         frame = new JFrame("New Task");
         panel = new JPanel();
         formPanel = new JPanel();
         dates = calendar.getWeekDates();
-        times = createTimes();
+        times = getTimes();
         priorities = new String[]{"Priority: Low", "Priority: Medium", "Priority: High"};
-        taskTitle = new JTextField();
+        text = new JTextField();
         date = createJComboBox(dates, calendar.getCurrentDayOfWeek().getValue() - 1);
         time = createJComboBox(times, 0);
         priority = createJComboBox(priorities, 1);
-        submit = createSubmitButton("Create Task");
+        submit = createSubmitButton();
         editing = false;
 
         init();
     }
 
     private void init() {
+        try {
+            UIManager.setLookAndFeel(new NimbusLookAndFeel());
+        } catch (UnsupportedLookAndFeelException e) {
+            throw new RuntimeException(e);
+        }
+        frame.setIconImage(Resources.CALENDAR_ICON);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setLocationRelativeTo(calendar);
-        frame.setAlwaysOnTop(true);
         frame.setResizable(false);
 
         panel.setLayout(new GridBagLayout());
@@ -72,8 +84,9 @@ public class TaskCreator {
         formConstraints.gridwidth = 3;
         formConstraints.gridx = 0;
         formConstraints.gridy = 0;
-        taskTitle.setToolTipText("Enter task name");
-        formPanel.add(taskTitle, formConstraints);
+        text.setToolTipText("Enter task name");
+        text.setDocument(new JTextFieldLimiter(60));
+        formPanel.add(text, formConstraints);
         formConstraints.gridwidth = 1;
         formConstraints.gridy++;
         formPanel.add(date, formConstraints);
@@ -90,7 +103,7 @@ public class TaskCreator {
         panelConstraints.fill = GridBagConstraints.BOTH;
         panel.add(submit, panelConstraints);
 
-        taskTitle.addKeyListener(new KeyAdapter() {
+        text.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -107,46 +120,50 @@ public class TaskCreator {
     }
 
     /**
-     * Displays the TaskCreator to create a new Task. This will display the necessary options to create
+     * Displays the TaskMenu to create a new Task. This will display the necessary options to create
      * a new Task as a graphical user interface.
      */
-    public void create() {
+    public void displayCreator() {
         editing = false;
         dates = calendar.getWeekDates();
-        taskTitle.setText(null);
+        text.setText(null);
         resetJComboBox(date, dates, calendar.getCurrentDayOfWeek().getValue() - 1);
         resetJComboBox(time, times, 0);
         resetJComboBox(priority, priorities, Task.PRIORITY_MEDIUM);
         submit.setText("Create Task");
         frame.setTitle("New Task");
+        frame.setLocation(Calendar.getPointForComponent(frame.getWidth(), frame.getHeight()));
         frame.setVisible(true);
     }
 
     /**
-     * Displays the TaskCreator with options populated based on the Task argument.
+     * Displays the TaskMenu with options populated based on the Task argument.
      *
      * @param task the Task to edit
      */
-    public void edit(Task task) {
+    public void displayEditor(Task task) {
         editingTask = task;
         editing = true;
         dates = calendar.getWeekDates();
-        taskTitle.setText(task.getText());
-        resetJComboBox(date, dates, Util.indexOf(calendar.getWeekDates(), task.getDate()));
-        resetJComboBox(time, times, Util.indexOf(times, task.getTime()));
+        text.setText(task.getText());
+        resetJComboBox(date, dates, Util.indexOf(task.getDate(), calendar.getWeekDates()));
+        resetJComboBox(time, times, Util.indexOf(task.getTime(), times));
         resetJComboBox(priority, priorities, task.getPriority());
         submit.setText("Update Task");
         frame.setTitle("Edit Task");
+        frame.setLocation(Calendar.getPointForComponent(frame.getWidth(), frame.getHeight()));
         frame.setVisible(true);
     }
 
     private void submitTask() {
-        Task task = new Task(taskTitle.getText(), date.getSelectedItem().toString(), time.getSelectedItem().toString(), priority.getSelectedIndex());
-        if (editing) {
-            task.setUUID(editingTask.getUUID());
-        }
-        if (!task.getText().equals("")) {
-            if (editing && editingTask != null) {
+        Task task = new Task(text.getText(),
+                Objects.requireNonNull(date.getSelectedItem()).toString(),
+                Objects.requireNonNull(time.getSelectedItem()).toString(),
+                priority.getSelectedIndex());
+
+        if (!task.getText().isEmpty()) {
+            if (editing) {
+                task.setUUID(editingTask.getUUID());
                 calendar.editTask(task);
             } else {
                 calendar.addTask(task);
@@ -155,9 +172,51 @@ public class TaskCreator {
         }
     }
 
-    private String[] createTimes() {
+    /**
+     * Sets the text in the text field to the specified String.
+     *
+     * @param text the String to put into the text field
+     */
+    public void setText(String text) {
+        this.text.setText(text);
+    }
+
+    /**
+     * Sets the date in the date selection drop-down list.
+     *
+     * @param date the date selection
+     */
+    public void setDate(String date) {
+        this.date.setSelectedIndex(calendar.getSelectedColumn());
+    }
+
+    /**
+     * Sets the time in the time selection drop-down list.
+     *
+     * @param time the time selection
+     */
+    public void setTime(String time) {
+        this.time.setSelectedIndex(Util.indexOf(time, times));
+    }
+
+    /**
+     * Sets the priority in the priority selection drop-down list.
+     *
+     * @param priority the priority selection
+     */
+    public void setPriority(int priority) {
+        this.priority.setSelectedIndex(priority);
+    }
+
+    /**
+     * Returns a String array containing the times available for a Task to be assigned. Index zero
+     * contains "11:59 PM" and the rest of the indexes are a range from "8:00 AM" to "8:00 PM" on
+     * half-hour intervals.
+     *
+     * @return the String array of times
+     */
+    public String[] getTimes() {
         List<String> timeList = new ArrayList<>();
-        String[] times;
 
         timeList.add("11:59 PM");
         int startHour = 8;
@@ -179,30 +238,19 @@ public class TaskCreator {
                 }
             }
         }
-        times = Arrays.copyOf(timeList.toArray(), timeList.size(), String[].class);
-
-        return times;
+        return Arrays.copyOf(timeList.toArray(), timeList.size(), String[].class);
     }
 
-    private JComboBox createJComboBox(String[] items, int defaultIndex) {
-        JComboBox cb = new JComboBox(items);
+    private JComboBox<String> createJComboBox(String[] items, int defaultIndex) {
+        JComboBox<String> cb = new JComboBox<>(items);
         cb.setSelectedIndex(defaultIndex);
         cb.setBackground(Color.WHITE);
 
         return cb;
     }
 
-    private JComboBox resetJComboBox(JComboBox cb, String[] items, int defaultIndex) {
-        cb.removeAllItems();
-        for (String s : items) {
-            cb.addItem(s);
-        }
-        cb.setSelectedIndex(defaultIndex);
-        return cb;
-    }
-
-    private JButton createSubmitButton(String text) {
-        JButton b = new JButton(text);
+    private JButton createSubmitButton() {
+        JButton b = new JButton("Create Task");
         b.setBorder(BorderFactory.createRaisedBevelBorder());
         b.setFocusable(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -215,5 +263,13 @@ public class TaskCreator {
             }
         });
         return b;
+    }
+
+    private void resetJComboBox(JComboBox<String> cb, String[] items, int defaultIndex) {
+        cb.removeAllItems();
+        for (String s : items) {
+            cb.addItem(s);
+        }
+        cb.setSelectedIndex(defaultIndex);
     }
 }

@@ -1,11 +1,12 @@
-package com.calanders.calplanner.calendar.task;
+package com.calanders.calplanner.data;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * A class that represents a Task of which a text, date, time, and priority level exist.
  */
-public class Task {
+public class Task implements Serializable {
     public static final int PRIORITY_LOW = 0;
     public static final int PRIORITY_MEDIUM = 1;
     public static final int PRIORITY_HIGH = 2;

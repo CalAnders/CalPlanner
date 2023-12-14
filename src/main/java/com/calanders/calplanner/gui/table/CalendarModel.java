@@ -1,4 +1,4 @@
-package com.calanders.calplanner.calendar.gui.table;
+package com.calanders.calplanner.gui.table;
 
 import javax.swing.table.DefaultTableModel;
 

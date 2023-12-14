@@ -65,7 +65,7 @@ public class FileManager {
     /**
      * Saves Settings into the system.
      *
-     * @param settings the ArrayList of Settings to be serialized
+     * @param settings the Settings to be serialized
      */
     public void saveSettings(Settings settings) {
         serialize(this.settings, settings);
