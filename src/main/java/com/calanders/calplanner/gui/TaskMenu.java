@@ -37,7 +37,7 @@ public class TaskMenu {
     private final JComboBox<String> time;
     private final JComboBox<String> priority;
     private final JButton submit;
-    private boolean editing;
+    private boolean isEditing;
     private Task editingTask;
 
     /**
@@ -58,7 +58,7 @@ public class TaskMenu {
         time = createJComboBox(times, 0);
         priority = createJComboBox(priorities, 1);
         submit = createSubmitButton();
-        editing = false;
+        isEditing = false;
 
         init();
     }
@@ -124,7 +124,7 @@ public class TaskMenu {
      * a new Task as a graphical user interface.
      */
     public void displayCreator() {
-        editing = false;
+        isEditing = false;
         dates = calendar.getWeekDates();
         text.setText(null);
         resetJComboBox(date, dates, calendar.getCurrentDayOfWeek().getValue() - 1);
@@ -132,7 +132,6 @@ public class TaskMenu {
         resetJComboBox(priority, priorities, Task.PRIORITY_MEDIUM);
         submit.setText("Create Task");
         frame.setTitle("New Task");
-        frame.setLocation(Calendar.getPointForComponent(frame.getWidth(), frame.getHeight()));
         frame.setVisible(true);
     }
 
@@ -143,7 +142,7 @@ public class TaskMenu {
      */
     public void displayEditor(Task task) {
         editingTask = task;
-        editing = true;
+        isEditing = true;
         dates = calendar.getWeekDates();
         text.setText(task.getText());
         resetJComboBox(date, dates, Util.indexOf(task.getDate(), calendar.getWeekDates()));
@@ -151,7 +150,6 @@ public class TaskMenu {
         resetJComboBox(priority, priorities, task.getPriority());
         submit.setText("Update Task");
         frame.setTitle("Edit Task");
-        frame.setLocation(Calendar.getPointForComponent(frame.getWidth(), frame.getHeight()));
         frame.setVisible(true);
     }
 
@@ -162,7 +160,7 @@ public class TaskMenu {
                 priority.getSelectedIndex());
 
         if (!task.getText().isEmpty()) {
-            if (editing) {
+            if (isEditing) {
                 task.setUUID(editingTask.getUUID());
                 calendar.editTask(task);
             } else {
@@ -170,6 +168,36 @@ public class TaskMenu {
             }
             frame.dispose();
         }
+    }
+
+    /**
+     * Sets the location of the Window to the specified Point. The parameter p determines the
+     * top-left corner of the Window.
+     *
+     * @param p the top-left Point of the Window
+     */
+    public void setLocation(Point p) {
+        frame.setLocation(p);
+    }
+
+    /**
+     * Sets the location of the Window relative to the specified Component. If the argument is
+     * null, the default location will be the center of the screen relative to the center of the
+     * Window instead of the top-left corner.
+     *
+     * @param c the relative Component
+     */
+    public void setLocationRelativeTo(Component c) {
+        frame.setLocationRelativeTo(c);
+    }
+
+    /**
+     * Retrieves the size of the Window defined by a Dimension object.
+     *
+     * @return the Dimension of the Window
+     */
+    public Dimension getSize() {
+        return frame.getSize();
     }
 
     /**
@@ -187,7 +215,7 @@ public class TaskMenu {
      * @param date the date selection
      */
     public void setDate(String date) {
-        this.date.setSelectedIndex(calendar.getSelectedColumn());
+        this.date.setSelectedIndex(calendar.getColumnIndex(date));
     }
 
     /**

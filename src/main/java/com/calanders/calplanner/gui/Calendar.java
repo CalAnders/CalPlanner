@@ -10,6 +10,7 @@ import com.calanders.calplanner.util.Util;
 
 import javax.swing.*;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.*;
@@ -26,12 +27,12 @@ import java.util.logging.Logger;
  * placed in their corresponding date.
  *
  * @author CalAnders
- * @version 1.0.6
+ * @version 1.0.7
  */
 public class Calendar {
     public static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public static final String TITLE = "CalPlanner";
-    public static final String VERSION = "1.0.6";
+    public static final String VERSION = "1.0.7";
     private final JFrame frame;
     private final JPanel panel;
     private final JPanel menuPanel;
@@ -159,6 +160,7 @@ public class Calendar {
                 } else {
                     if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
                         taskMenu.displayCreator();
+                        taskMenu.setLocation(getPointForComponent(taskMenu.getSize().getWidth(), taskMenu.getSize().getHeight()));
                         taskMenu.setDate(getWeekDates()[calendarTable.getSelectedColumn()]);
                     }
                 }
@@ -408,10 +410,11 @@ public class Calendar {
     public void setCalendarWeek(int offset) {
         weekOffset = offset;
         String[] weekDates = getWeekDates();
+        JTableHeader header = calendarTable.getTableHeader();
         for (int col = 0; col < 7; col++) {
-            calendarTable.getTableHeader().getColumnModel().getColumn(col).setHeaderValue(weekDates[col]);
+            header.getColumnModel().getColumn(col).setHeaderValue(weekDates[col]);
         }
-        calendarTable.getTableHeader().repaint();
+        header.repaint();
         renderTasks();
     }
 
@@ -462,6 +465,31 @@ public class Calendar {
     }
 
     /**
+     * Retrieves the column index of the specified title Object. If a null value or a title
+     * argument that doesn't match any existing columns is passed, -1 will be returned.
+     *
+     * @param title the title of the column
+     * @return the index of the column, or -1 if not found.
+     */
+    public int getColumnIndex(Object title) {
+        for (int col = 0; col < 7; col++) {
+            if (calendarTable.getColumnModel().getColumn(col).getHeaderValue().equals(title)) {
+                return col;
+            }
+        }
+        return -1;
+    }
+
+    private TableColumn getColumn(Object title) {
+        for (int col = 0; col < 7; col++) {
+            if (calendarTable.getColumnModel().getColumn(col).getHeaderValue().equals(title)) {
+                return calendarTable.getColumnModel().getColumn(col);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Retrieves the index of the Calendar's selected column.
      *
      * @return the column index
@@ -477,15 +505,6 @@ public class Calendar {
      */
     public int getSelectedRow() {
         return calendarTable.getSelectedRow();
-    }
-
-    private TableColumn getColumn(Object title) {
-        for (int col = 0; col < 7; col++) {
-            if (calendarTable.getColumnModel().getColumn(col).getHeaderValue().equals(title)) {
-                return calendarTable.getColumnModel().getColumn(col);
-            }
-        }
-        return null;
     }
 
     /* Component methods */
@@ -536,6 +555,7 @@ public class Calendar {
             @Override
             public void mouseReleased(MouseEvent e) {
                 taskMenu.displayCreator();
+                taskMenu.setLocationRelativeTo(null);
             }
         });
         return b;
